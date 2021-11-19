@@ -1,0 +1,1252 @@
+# possible roots: configs, specs, schemas, data, mocks
+configs:
+- id: Latency
+  description: Artificial delay on all responses
+  value: "10"
+
+- id: force_errors
+  description: Force errors or not
+  value: "1"
+
+specs:
+- id: petstore
+  description: "Pet Store v3"
+  spec: |+
+    openapi: 3.0.1
+    info:
+      title: Swagger Petstore
+      description: This is a sample server Petstore server.
+      termsOfService: http://swagger.io/terms/
+      contact:
+        email: apiteam@swagger.io
+      license:
+        name: Apache 2.0
+        url: http://www.apache.org/licenses/LICENSE-2.0.html
+      version: 1.0.0
+    externalDocs:
+      description: Find out more about Swagger
+      url: http://swagger.io
+    servers:
+    - url: https://petstore.swagger.io/v2
+    - url: http://petstore.swagger.io/v2
+    tags:
+    - name: pet
+      description: Everything about your Pets
+      externalDocs:
+        description: Find out more
+        url: http://swagger.io
+    - name: store
+      description: Access to Petstore orders
+    - name: user
+      description: Operations about user
+      externalDocs:
+        description: Find out more about our store
+        url: http://swagger.io
+    paths:
+      /pet:
+        put:
+          tags:
+          - pet
+          summary: Update an existing pet
+          operationId: updatePet
+          requestBody:
+            description: Pet object that needs to be added to the store
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Pet'
+              application/xml:
+                schema:
+                  $ref: '#/components/schemas/Pet'
+            required: true
+          responses:
+            400:
+              description: Invalid ID supplied
+              content: {}
+            404:
+              description: Pet not found
+              content: {}
+            405:
+              description: Validation exception
+              content: {}
+          security:
+          - petstore_auth:
+            - write:pets
+            - read:pets
+          x-codegen-request-body-name: body
+        post:
+          tags:
+          - pet
+          summary: Add a new pet to the store
+          operationId: addPet
+          requestBody:
+            description: Pet object that needs to be added to the store
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Pet'
+              application/xml:
+                schema:
+                  $ref: '#/components/schemas/Pet'
+            required: true
+          responses:
+            405:
+              description: Invalid input
+              content: {}
+          security:
+          - petstore_auth:
+            - write:pets
+            - read:pets
+          x-codegen-request-body-name: body
+      /pet/findByStatus:
+        get:
+          tags:
+          - pet
+          summary: Finds Pets by status
+          description: Multiple status values can be provided with comma separated strings
+          operationId: findPetsByStatus
+          parameters:
+          - name: status
+            in: query
+            description: Status values that need to be considered for filter
+            required: true
+            style: form
+            explode: true
+            schema:
+              type: array
+              items:
+                type: string
+                default: available
+                enum:
+                - available
+                - pending
+                - sold
+          responses:
+            200:
+              description: successful operation
+              content:
+                application/xml:
+                  schema:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Pet'
+                application/json:
+                  schema:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Pet'
+            400:
+              description: Invalid status value
+              content: {}
+          security:
+          - petstore_auth:
+            - write:pets
+            - read:pets
+      /pet/findByTags:
+        get:
+          tags:
+          - pet
+          summary: Finds Pets by tags
+          description: Muliple tags can be provided with comma separated strings. Use         tag1,
+            tag2, tag3 for testing.
+          operationId: findPetsByTags
+          parameters:
+          - name: tags
+            in: query
+            description: Tags to filter by
+            required: true
+            style: form
+            explode: true
+            schema:
+              type: array
+              items:
+                type: string
+          responses:
+            200:
+              description: successful operation
+              content:
+                application/xml:
+                  schema:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Pet'
+                application/json:
+                  schema:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Pet'
+            400:
+              description: Invalid tag value
+              content: {}
+          deprecated: true
+          security:
+          - petstore_auth:
+            - write:pets
+            - read:pets
+      /pet/{petId}:
+        get:
+          tags:
+          - pet
+          summary: Find pet by ID
+          description: Returns a single pet
+          operationId: getPetById
+          parameters:
+          - name: petId
+            in: path
+            description: ID of pet to return
+            required: true
+            schema:
+              type: integer
+              format: int64
+          responses:
+            200:
+              description: successful operation
+              content:
+                application/xml:
+                  schema:
+                    $ref: '#/components/schemas/Pet'
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/Pet'
+            400:
+              description: Invalid ID supplied
+              content: {}
+            404:
+              description: Pet not found
+              content: {}
+          security:
+          - api_key: []
+        post:
+          tags:
+          - pet
+          summary: Updates a pet in the store with form data
+          operationId: updatePetWithForm
+          parameters:
+          - name: petId
+            in: path
+            description: ID of pet that needs to be updated
+            required: true
+            schema:
+              type: integer
+              format: int64
+          requestBody:
+            content:
+              application/x-www-form-urlencoded:
+                schema:
+                  properties:
+                    name:
+                      type: string
+                      description: Updated name of the pet
+                    status:
+                      type: string
+                      description: Updated status of the pet
+          responses:
+            405:
+              description: Invalid input
+              content: {}
+          security:
+          - petstore_auth:
+            - write:pets
+            - read:pets
+        delete:
+          tags:
+          - pet
+          summary: Deletes a pet
+          operationId: deletePet
+          parameters:
+          - name: api_key
+            in: header
+            schema:
+              type: string
+          - name: petId
+            in: path
+            description: Pet id to delete
+            required: true
+            schema:
+              type: integer
+              format: int64
+          responses:
+            400:
+              description: Invalid ID supplied
+              content: {}
+            404:
+              description: Pet not found
+              content: {}
+          security:
+          - petstore_auth:
+            - write:pets
+            - read:pets
+      /pet/{petId}/uploadImage:
+        post:
+          tags:
+          - pet
+          summary: uploads an image
+          operationId: uploadFile
+          parameters:
+          - name: petId
+            in: path
+            description: ID of pet to update
+            required: true
+            schema:
+              type: integer
+              format: int64
+          requestBody:
+            content:
+              multipart/form-data:
+                schema:
+                  properties:
+                    additionalMetadata:
+                      type: string
+                      description: Additional data to pass to server
+                    file:
+                      type: string
+                      description: file to upload
+                      format: binary
+          responses:
+            200:
+              description: successful operation
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/ApiResponse'
+          security:
+          - petstore_auth:
+            - write:pets
+            - read:pets
+      /store/inventory:
+        get:
+          tags:
+          - store
+          summary: Returns pet inventories by status
+          description: Returns a map of status codes to quantities
+          operationId: getInventory
+          responses:
+            200:
+              description: successful operation
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    additionalProperties:
+                      type: integer
+                      format: int32
+          security:
+          - api_key: []
+      /store/order:
+        post:
+          tags:
+          - store
+          summary: Place an order for a pet
+          operationId: placeOrder
+          requestBody:
+            description: order placed for purchasing the pet
+            content:
+              '*/*':
+                schema:
+                  $ref: '#/components/schemas/Order'
+            required: true
+          responses:
+            200:
+              description: successful operation
+              content:
+                application/xml:
+                  schema:
+                    $ref: '#/components/schemas/Order'
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/Order'
+            400:
+              description: Invalid Order
+              content: {}
+          x-codegen-request-body-name: body
+      /store/order/{orderId}:
+        get:
+          tags:
+          - store
+          summary: Find purchase order by ID
+          description: For valid response try integer IDs with value >= 1 and <= 10.         Other
+            values will generated exceptions
+          operationId: getOrderById
+          parameters:
+          - name: orderId
+            in: path
+            description: ID of pet that needs to be fetched
+            required: true
+            schema:
+              maximum: 10.0
+              minimum: 1.0
+              type: integer
+              format: int64
+          responses:
+            200:
+              description: successful operation
+              content:
+                application/xml:
+                  schema:
+                    $ref: '#/components/schemas/Order'
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/Order'
+            400:
+              description: Invalid ID supplied
+              content: {}
+            404:
+              description: Order not found
+              content: {}
+        delete:
+          tags:
+          - store
+          summary: Delete purchase order by ID
+          description: For valid response try integer IDs with positive integer value.         Negative
+            or non-integer values will generate API errors
+          operationId: deleteOrder
+          parameters:
+          - name: orderId
+            in: path
+            description: ID of the order that needs to be deleted
+            required: true
+            schema:
+              minimum: 1.0
+              type: integer
+              format: int64
+          responses:
+            400:
+              description: Invalid ID supplied
+              content: {}
+            404:
+              description: Order not found
+              content: {}
+      /user:
+        post:
+          tags:
+          - user
+          summary: Create user
+          description: This can only be done by the logged in user.
+          operationId: createUser
+          requestBody:
+            description: Created user object
+            content:
+              '*/*':
+                schema:
+                  $ref: '#/components/schemas/User'
+            required: true
+          responses:
+            default:
+              description: successful operation
+              content: {}
+          x-codegen-request-body-name: body
+      /user/createWithArray:
+        post:
+          tags:
+          - user
+          summary: Creates list of users with given input array
+          operationId: createUsersWithArrayInput
+          requestBody:
+            description: List of user object
+            content:
+              '*/*':
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/User'
+            required: true
+          responses:
+            default:
+              description: successful operation
+              content: {}
+          x-codegen-request-body-name: body
+      /user/createWithList:
+        post:
+          tags:
+          - user
+          summary: Creates list of users with given input array
+          operationId: createUsersWithListInput
+          requestBody:
+            description: List of user object
+            content:
+              '*/*':
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/User'
+            required: true
+          responses:
+            default:
+              description: successful operation
+              content: {}
+          x-codegen-request-body-name: body
+      /user/login:
+        get:
+          tags:
+          - user
+          summary: Logs user into the system
+          operationId: loginUser
+          parameters:
+          - name: username
+            in: query
+            description: The user name for login
+            required: true
+            schema:
+              type: string
+          - name: password
+            in: query
+            description: The password for login in clear text
+            required: true
+            schema:
+              type: string
+          responses:
+            200:
+              description: successful operation
+              headers:
+                X-Rate-Limit:
+                  description: calls per hour allowed by the user
+                  schema:
+                    type: integer
+                    format: int32
+                X-Expires-After:
+                  description: date in UTC when token expires
+                  schema:
+                    type: string
+                    format: date-time
+              content:
+                application/xml:
+                  schema:
+                    type: string
+                application/json:
+                  schema:
+                    type: string
+            400:
+              description: Invalid username/password supplied
+              content: {}
+      /user/logout:
+        get:
+          tags:
+          - user
+          summary: Logs out current logged in user session
+          operationId: logoutUser
+          responses:
+            default:
+              description: successful operation
+              content: {}
+      /user/{username}:
+        get:
+          tags:
+          - user
+          summary: Get user by user name
+          operationId: getUserByName
+          parameters:
+          - name: username
+            in: path
+            description: 'The name that needs to be fetched. Use user1 for testing. '
+            required: true
+            schema:
+              type: string
+          responses:
+            200:
+              description: successful operation
+              content:
+                application/xml:
+                  schema:
+                    $ref: '#/components/schemas/User'
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/User'
+            400:
+              description: Invalid username supplied
+              content: {}
+            404:
+              description: User not found
+              content: {}
+        put:
+          tags:
+          - user
+          summary: Updated user
+          description: This can only be done by the logged in user.
+          operationId: updateUser
+          parameters:
+          - name: username
+            in: path
+            description: name that need to be updated
+            required: true
+            schema:
+              type: string
+          requestBody:
+            description: Updated user object
+            content:
+              '*/*':
+                schema:
+                  $ref: '#/components/schemas/User'
+            required: true
+          responses:
+            400:
+              description: Invalid user supplied
+              content: {}
+            404:
+              description: User not found
+              content: {}
+          x-codegen-request-body-name: body
+        delete:
+          tags:
+          - user
+          summary: Delete user
+          description: This can only be done by the logged in user.
+          operationId: deleteUser
+          parameters:
+          - name: username
+            in: path
+            description: The name that needs to be deleted
+            required: true
+            schema:
+              type: string
+          responses:
+            400:
+              description: Invalid username supplied
+              content: {}
+            404:
+              description: User not found
+              content: {}
+    components:
+      schemas:
+        Order:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+            petId:
+              type: integer
+              format: int64
+            quantity:
+              type: integer
+              format: int32
+            shipDate:
+              type: string
+              format: date-time
+            status:
+              type: string
+              description: Order Status
+              enum:
+              - placed
+              - approved
+              - delivered
+            complete:
+              type: boolean
+              default: false
+          xml:
+            name: Order
+        Category:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+            name:
+              type: string
+          xml:
+            name: Category
+        User:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+            username:
+              type: string
+            firstName:
+              type: string
+            lastName:
+              type: string
+            email:
+              type: string
+            password:
+              type: string
+            phone:
+              type: string
+            userStatus:
+              type: integer
+              description: User Status
+              format: int32
+          xml:
+            name: User
+        Tag:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+            name:
+              type: string
+          xml:
+            name: Tag
+        Pet:
+          required:
+          - name
+          - photoUrls
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+            category:
+              $ref: '#/components/schemas/Category'
+            name:
+              type: string
+              example: doggie
+            photoUrls:
+              type: array
+              xml:
+                name: photoUrl
+                wrapped: true
+              items:
+                type: string
+            tags:
+              type: array
+              xml:
+                name: tag
+                wrapped: true
+              items:
+                $ref: '#/components/schemas/Tag'
+            status:
+              type: string
+              description: pet status in the store
+              enum:
+              - available
+              - pending
+              - sold
+          xml:
+            name: Pet
+        ApiResponse:
+          type: object
+          properties:
+            code:
+              type: integer
+              format: int32
+            type:
+              type: string
+            message:
+              type: string
+      securitySchemes:
+        petstore_auth:
+          type: oauth2
+          flows:
+            implicit:
+              authorizationUrl: http://petstore.swagger.io/oauth/dialog
+              scopes:
+                write:pets: modify pets in your account
+                read:pets: read your pets
+        api_key:
+          type: apiKey
+          name: api_key
+          in: header
+
+# possible roots: configs, specs, schemas, data, mocks
+schemas:
+- id: pet
+  description: Pet model in YAML format
+  schema: |+
+    type: object
+    properties:
+      id:
+        type: number
+      name:
+        type: string
+      eats:
+        type: string
+      age:
+        type: number
+      foodBalance:
+        type: number
+    required: [id, name, foodBalance]
+    additionalProperties: false
+
+- id: customer
+  description: Customer model in JSON format
+  schema: |+
+    {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number"
+        },
+        "name": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "name"],
+      "additionalProperties": false
+    }
+
+- id: trackers
+  description: Model for trackers
+  schema: |+
+    type: object
+    properties:
+      current:
+        type: string
+    required: [current]
+    additionalProperties: false
+
+- id: _audit
+  # prefix '_' to exclude from data loader for templates
+  description: Model for audit trail for requestresponse pairs
+  schema: |+
+    type: object
+    properties:
+      id:
+        type: string
+      date:
+        type: string
+      request:
+        type: object
+        additionalProperties: true
+      response:
+        type: object
+        additionalProperties: true
+    required: [id, date]
+    additionalProperties: false
+
+# possible roots: configs, specs, schemas, data, mocks
+data:
+- id: pet1
+  description: data for pet1 in YAML format
+  schema_id: pet
+  value: |+
+    id: 1
+    name: "Tom"
+    age: 1
+    foodBalance: 100
+
+- id: pet2
+  description: data for pet2 in JSON format
+  schema_id: pet
+  value: |+
+    {
+      "id": 2,
+      "name": "Jerry",
+      "age": 2,
+      "foodBalance": 200
+    }
+
+- id: pet3
+  description: data for pet3 in JSON format
+  schema_id: pet
+  value: |+
+    {
+      "id": 3,
+      "name": "Tweety",
+      "age": 3,
+      "foodBalance": 300
+    }
+
+- id: customer1
+  description: data for customer1 in JSON format
+  schema_id: customer
+  value: |+
+    {
+      "id": 1,
+      "name": "Ali Castle",
+      "city": "London"
+    }
+
+- id: requests
+  description: request counter to demo 'inc'
+  schema_id: trackers
+  value: |+
+    {
+      "current": "0"
+    }
+
+- id: quota
+  description: quota counter to demo 'dec'
+  schema_id: trackers
+  value: |+
+    {
+      "current": "1000"
+    }
+
+- id: last_request_time
+  description: last request date/time to demo 'set'
+  schema_id: trackers
+  value: |+
+    {
+      "current": ""
+    }
+
+# possible roots: configs, specs, schemas, data, mocks
+mocks:
+- id: get_petstore_v3_pets
+  description: "Get list of pets"
+  reqMethod: GET
+  reqPath: "/pet-store/v3/pets$"
+  reqQuery: ""
+  reqHeaders: ""
+  reqBody: ""
+  requireData: ""
+  resStatus: ""
+  resHeaders: |+
+    x-request-ref: {{{$req.id}}}
+  resBody: "{{{jsonarray $db.pet}}}"
+  dataOpsBefore: ""
+  dataOpsAfter: ""
+
+- id: get_petstore_v3_pets_1
+  description: "Get details of pet1"
+  reqMethod: GET
+  reqPath: "/pet-store/v3/pets/1$"
+  reqQuery: ""
+  reqHeaders: ""
+  reqBody: ""
+  requireData: ""
+  resStatus: ""
+  resHeaders: |+
+    x-request-ref: {{{$req.id}}}
+    x-request-idx: {{{$db.trackers.requests.current}}}
+    x-quota: {{{$db.trackers.quota.current}}}
+    x-last-request: {{{$db.trackers.last_request_time.current}}}
+  resBody: "{{{json $db.pet.pet1}}}"
+  dataOpsBefore: |+
+    inc:
+    - id: requests
+      field: current
+      value: 1
+    set:
+    - id: last_request_time
+      field: current
+      value: {{{$req.time}}}
+  dataOpsAfter: |+
+    dec:
+    - id: quota
+      field: current
+      value: 1
+
+- id: get_petstore_v3_pets_2
+  description: "Get details of pet2"
+  reqMethod: GET
+  reqPath: "/pet-store/v3/pets/2$"
+  reqQuery: ""
+  reqHeaders: ""
+  reqBody: ""
+  requireData: ""
+  resStatus: ""
+  resHeaders: |+
+    x-request-id: {{{$db.trackers.requests.current}}}
+    x-quota: {{{$db.trackers.quota.current}}}
+    x-last-request: {{{$db.trackers.last_request_time.current}}}
+  resBody: |+
+    {
+      "data": {
+        "name": "{{{$db.pet.pet2.name}}}"
+      }
+    }
+  dataOpsBefore: |+
+    inc:
+    - id: requests
+      field: current
+      value: 1
+    set:
+    - id: last_request_time
+      field: current
+      value: {{{$req.time}}}
+  dataOpsAfter: |+
+    dec:
+    - id: quota
+      field: current
+      value: 1
+
+- id: get_petstore_v3_pets_generic
+  description: "Get details of pet - generic"
+  reqMethod: GET
+  # NOTE: TypeScript has issue with 'groups' in RegExp.exec() regarding named pattern groups
+  # this will work if you run the transpiled code
+  reqPath: "/pet-store/v3/pets-generic/(?<petId>\\d+)$"
+  reqQuery: ""
+  reqHeaders: ""
+  reqBody: ""
+  requireData: ""
+  resStatus: ""
+  resHeaders: ""
+  resBody: |+
+    {
+      "data": {{{json1 $db.filter.petById}}}
+    }
+  dataOpsBefore: |+
+    filter:
+    - schema_id: pet
+      alias: petById
+      where:
+        id:
+          $eq: "{{{$req.match.path.groups.petId}}}"
+  dataOpsAfter: ""
+
+- id: get_petstore_v3_pets_filter
+  description: "Search/filter pets"
+  reqMethod: GET
+  reqPath: "/pet-store/v3/pets$"
+  reqQuery: "(?<age>\\d+)"
+  reqHeaders: ""
+  reqBody: ""
+  requireData: ""
+  resStatus: ""
+  resHeaders: ""
+  resBody: |+
+    {
+      "data": {{{jsonarray $db.filter.petsByAge}}}
+    }
+  dataOpsBefore: |+
+    filter:
+    - schemaId: pet
+      alias: petsByAge
+      where:
+        age:
+          $gte: {{{$req.match.query.groups.age}}}
+  dataOpsAfter: ""
+
+- id: post_petstore_v3_pets
+  description: "POST to pets"
+  reqMethod: POST
+  reqPath: "/pet-store/v3/pets$"
+  reqQuery: ""
+  reqHeaders: ""
+  # both regexp must match separately, results are combined under '$req.match.body'
+  reqBody: |+
+    "id":\d+
+    "name":"[^"]+"
+  resStatus: "201"
+  resHeaders: |+
+    x-request-ref: "{{{$req.id}}}"
+  resBody: |+
+    { "data": {{{json1 $db.filter.petByName}}} }
+  dataOpsBefore: |+
+    ins:
+    - schema_id: "pet"
+      id: "pet{{{$req.body.id}}}"
+      description: "new pet created via mocking {{{$req.body.id}}}"
+      value: |+
+        {{{json $req.body}}}
+    filter:
+    - schema_id: pet
+      alias: petByName
+      where:
+        name:
+          $eq: "{{{$req.body.name}}}"
+  dataOpsAfter: ""
+
+- id: put_petstore_v3_pets_4
+  description: "PUT pets/4"
+  reqMethod: PUT
+  reqPath: "/pet-store/v3/pets/4$"
+  reqQuery: ""
+  reqHeaders: ""
+  reqBody: '"name":"[^"]+"'
+  requireData: ""
+  resStatus: ""
+  resHeaders: |+
+    x-request-ref: {{{$req.id}}}
+  resBody: "{{{json $db.pet.pet4}}}"
+  dataOpsBefore: |+
+    put:
+    - id: "pet4"
+      value: |+
+        {{{json $req.body}}}
+  dataOpsAfter: ""
+
+- id: patch_petstore_v3_pets_generic_id
+  description: "PATCH pets/[id]"
+  reqMethod: PATCH
+  reqPath: "/pet-store/v3/pets/(?<id>\\d+)$"
+  reqQuery: ""
+  reqHeaders: ""
+  reqBody: '"name":"(?<name>[^"]+)"'
+  requireData: ""
+  resStatus: ""
+  resHeaders: |+
+    x-request-ref: {{{$req.id}}}
+  resBody: |+
+    status: "updated"
+    id: "pet{{{$req.match.path.groups.id}}}"
+  dataOpsBefore: |+
+    put:
+    - id: "pet{{{$req.match.path.groups.id}}}"
+      value: |+
+        {{{json $req.body}}}
+  dataOpsAfter: ""
+
+- id: del_petstore_v3_pets_generic_id
+  description: "DELETE pets/[id]"
+  reqMethod: DELETE
+  reqPath: "/pet-store/v3/pets/(?<id>\\d+)$"
+  reqQuery: ""
+  reqHeaders: ""
+  reqBody: ""
+  requireData: ""
+  resStatus: ""
+  resHeaders: |+
+    x-request-ref: {{{$req.id}}}
+  resBody: |+
+    status: "deleted"
+  dataOpsBefore: |+
+    del:
+    - id: "pet{{{$req.match.path.groups.id}}}"
+  dataOpsAfter: ""
+
+- id: post_petstore_v3_food_transfers
+  description: "POST to food-transfers"
+  reqMethod: POST
+  reqPath: "/pet-store/v3/food-transfers$"
+  reqQuery: ""
+  reqHeaders: ""
+  reqBody: ""
+  requireData: |+
+    - schema_id: pet
+      alias: petFrom
+      where:
+        id:
+          $eq: {{{$req.body.fromPetId}}}
+        foodBalance:
+          $gte: {{{$req.body.foodAmount}}}
+    - schema_id: pet
+      alias: petTo
+      where:
+        id:
+          $eq: {{{$req.body.toPetId}}}
+  resStatus: "201"
+  resHeaders: |+
+    x-request-ref: "{{{$req.id}}}"
+  resBody: |+
+    {
+      "data": {
+        "from": {{{json1 $db.filter.petFrom}}},
+        "to": {{{json1 $db.filter.petTo}}},
+        "foodAmount": {{{$req.body.foodAmount}}},
+        "status": "pending"
+      }
+    }
+  dataOpsBefore: |+
+    filter:
+    - schema_id: pet
+      alias: petFrom
+      where:
+        id:
+          $eq: {{{$req.body.fromPetId}}}
+        foodBalance:
+          $gte: {{{$req.body.foodAmout}}}
+    - schema_id: pet
+      alias: petTo
+      where:
+        id:
+          $eq: {{{$req.body.toPetId}}}
+  dataOpsAfter: ""
+
+# rendering conditional response body is more efficient than using 'requireData' filters to match request
+- id: post_petstore_v3_food_transfers2
+  description: "POST to food-transfers2"
+  reqMethod: POST
+  reqPath: "/pet-store/v3/food-transfers2$"
+  reqQuery: ""
+  reqHeaders: ""
+  reqBody: ""
+  requireData: ""
+  resStatus: |+
+    {{#if (notempty $db.filter.petFrom)}}
+      {{#if (notempty $db.filter.petTo)}}
+        200
+      {{else}}
+        404
+      {{/if}}
+    {{else}}
+      403
+    {{/if}}
+  resHeaders: |+
+    x-request-ref: "{{{$req.id}}}"
+  resBody: |+
+    {
+    {{#if (notempty $db.filter.petFrom)}}
+      {{#if (notempty $db.filter.petTo)}}
+        "data": {
+          "from": {{{json1 $db.filter.petFrom}}},
+          "to": {{{json1 $db.filter.petTo}}},
+          "foodAmount": {{{$req.body.foodAmount}}},
+          "status": "pending"
+        }
+      {{else}}
+        "error": "not found: toPetId"
+      {{/if}}
+    {{else}}
+      "error": "not found: fromPetId or insufficient food balance"
+    {{/if}}
+    }
+  dataOpsBefore: |+
+    filter:
+    - schema_id: pet
+      alias: petFrom
+      where:
+        id:
+          $eq: {{{$req.body.fromPetId}}}
+        foodBalance:
+          $gte: {{{$req.body.foodAmount}}}
+    - schema_id: pet
+      alias: petTo
+      where:
+        id:
+          $eq: {{{$req.body.toPetId}}}
+  dataOpsAfter: |+
+    dec:
+    - id: "pet{{{$req.body.fromPetId}}}"
+      field: foodBalance
+      value: {{{$req.body.foodAmount}}}
+      conditions:
+      - {{{notempty $db.filter.petFrom}}}
+      - {{{notempty $db.filter.petTo}}}
+
+    {{#if (notempty $db.filter.petFrom)}}
+    {{#if (notempty $db.filter.petTo)}}
+    inc:
+    - id: "pet{{{$req.body.toPetId}}}"
+      field: foodBalance
+      value: {{{$req.body.foodAmount}}}
+    {{/if}}
+    {{/if}}
+
+- id: audit_trail_sample_post
+  description: "Post audits"
+  reqMethod: POST
+  reqPath: "/audits$"
+  reqQuery: ""
+  reqHeaders: ""
+  reqBody: ""
+  requireData: ""
+  resStatus: ""
+  resHeaders: |+
+    x-request-ref: {{{$req.id}}}
+  resBody: "{{{jsonarray $db.pet}}}"
+  dataOpsBefore: |+
+    create:
+    - schema_id: _audit
+      id: "_audit_{{{snake $req.id}}}"
+      value: |+
+        {
+          "id": "{{{snake $req.id}}}",
+          "date": "{{{$req.time}}}",
+          "request": {
+            "method":  "{{{$req.method}}}",
+            "path":    "{{{$req.path}}}",
+            "query":   {{{json $req.query}}},
+            "headers": {{{json $req.headers}}},
+            "body":    {{{json $req.body}}}
+          },
+          "response": {}
+        }
+  dataOpsAfter: |+
+    update:
+    - id: "_audit_{{{snake $req.id}}}"
+      value: |+
+        {
+          "response": {
+            "status":  "{{{$res.status}}}",
+            "headers": {{{json $res.headers}}},
+            "body":    {{{json $res.body}}}
+          }
+        }
